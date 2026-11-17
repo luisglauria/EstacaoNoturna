@@ -1,14 +1,11 @@
-/* Sintetiza efeitos e música em memória: senoides, ruído filtrado, varreduras, eco e envelopes.
-   Feito assim para o projeto não depender de arquivos de áudio nem de licenças de terceiros. */
-#include "audio.h"
-#include "raylib.h"
+#include "interface.h"
 #include <math.h>
 #include <stdlib.h>
 
+/* Música e efeitos sintetizados em memória, sem arquivos de áudio. */
 #define TAXA 44100
-/* Todas as frequências da música fecham ciclos inteiros em 16 s, então o loop não estala. */
 #define DURACAO_MUSICA 16.0f
-#define VELOCIDADE_TENSAO 0.35f /* por segundo: a tensão entra e sai aos poucos */
+#define VELOCIDADE_TENSAO 0.35f
 
 static Sound efeitos[EFEITO_TOTAL];
 static Sound musica_base;
@@ -53,19 +50,17 @@ static void somar_varredura(Buffer *b, float inicio, float duracao, float de, fl
     }
 }
 
-/* Ruído com filtro passa-baixa: suavidade perto de 1 = abafado (trovão), perto de 0 = chiado. */
 static void somar_ruido(Buffer *b, float inicio, float duracao, float volume, float suavidade, float ataque) {
     int primeiro = (int)(inicio * TAXA), total = (int)(duracao * TAXA);
     float filtrado = 0;
     for (int i = 0; i < total && primeiro + i < b->quadros; i++) {
-        float branco = (float)rand() / RAND_MAX * 2.0f - 1.0f;
+        float branco = (float)rand() / (float)RAND_MAX * 2.0f - 1.0f;
         filtrado = filtrado * suavidade + branco * (1.0f - suavidade);
         float t = (float)i / TAXA;
         b->amostras[primeiro + i] += filtrado * volume * envelope(t, duracao, ataque);
     }
 }
 
-/* Eco simples (repetições cada vez mais fracas): dá a sensação de espaço e distância. */
 static void somar_eco(Buffer *b, float atraso, float ganho) {
     int deslocamento = (int)(atraso * TAXA);
     for (int i = deslocamento; i < b->quadros; i++) b->amostras[i] += b->amostras[i - deslocamento] * ganho;
@@ -81,14 +76,11 @@ static Sound para_som(Buffer *b) {
     return som;
 }
 
-/* ---------- música ---------- */
-
-/* Camada de fundo: zumbido grave que "respira", acorde menor com sexta menor e o chiado do rádio. */
 static void compor_base(Buffer *b) {
-    const float acorde[] = {110.0f, 130.8125f, 164.8125f, 174.625f}; /* lá, dó, mi, fá: menor e sombrio */
+    const float acorde[] = {110.0f, 130.8125f, 164.8125f, 174.625f};
     for (int i = 0; i < b->quadros; i++) {
         float t = (float)i / TAXA;
-        float drone = sinf(2 * PI * 55.0f * t) * 0.16f + sinf(2 * PI * 55.5f * t) * 0.12f; /* batimento lento de 0,5 Hz */
+        float drone = sinf(2 * PI * 55.0f * t) * 0.16f + sinf(2 * PI * 55.5f * t) * 0.12f;
         float pad = 0;
         for (int nota = 0; nota < 4; nota++) {
             float respiracao = 0.5f - 0.5f * cosf(2 * PI * (t / DURACAO_MUSICA + nota * 0.25f));
@@ -98,15 +90,14 @@ static void compor_base(Buffer *b) {
         b->amostras[i] = drone + pad + agudo;
     }
     somar_ruido(b, 0, DURACAO_MUSICA, 0.02f, 0.93f, 2.0f);
-    somar_tom(b, 3.0f, 0.06f, 1180, 0.03f); /* Morse distante, quase inaudível */
+    somar_tom(b, 3.0f, 0.06f, 1180, 0.03f);
     somar_tom(b, 3.15f, 0.18f, 1180, 0.03f);
     somar_tom(b, 11.4f, 0.06f, 1180, 0.025f);
-    somar_varredura(b, 8.0f, 1.4f, 92, 68, 0.05f); /* rangido do prédio */
+    somar_varredura(b, 8.0f, 1.4f, 92, 68, 0.05f);
     somar_ruido(b, 8.0f, 1.4f, 0.02f, 0.97f, 0.3f);
     somar_eco(b, 0.33f, 0.35f);
 }
 
-/* Camada de perigo: coração, cordas agudas tremendo e pulsação grave. */
 static void compor_tensao(Buffer *b) {
     for (int i = 0; i < b->quadros; i++) {
         float t = (float)i / TAXA;
@@ -115,12 +106,10 @@ static void compor_tensao(Buffer *b) {
         b->amostras[i] = cordas + graves;
     }
     for (int batida = 0; batida < 16; batida++) {
-        somar_tom(b, batida * 1.0f, 0.14f, 48, 0.32f);         /* tum */
-        somar_tom(b, batida * 1.0f + 0.2f, 0.12f, 44, 0.22f); /* tum */
+        somar_tom(b, batida * 1.0f, 0.14f, 48, 0.32f);
+        somar_tom(b, batida * 1.0f + 0.2f, 0.12f, 44, 0.22f);
     }
 }
-
-/* ---------- efeitos ---------- */
 
 static Sound gerar_efeito(EfeitoSonoro efeito) {
     Buffer b = criar_buffer(efeito == EFEITO_TROVAO ? 3.2f : 1.8f);
@@ -143,7 +132,7 @@ static Sound gerar_efeito(EfeitoSonoro efeito) {
             break;
         case EFEITO_PASSO: somar_ruido(&b, 0, 0.06f, 0.3f, 0.85f, 0.003f); somar_tom(&b, 0, 0.05f, 85, 0.15f); break;
         case EFEITO_TROVAO: somar_ruido(&b, 0, 3.0f, 0.9f, 0.985f, 0.15f); somar_tom(&b, 0.05f, 2.5f, 38, 0.2f); break;
-        default: somar_ruido(&b, 0, 0.18f, 0.22f, 0.8f, 0.02f); break; /* papel */
+        default: somar_ruido(&b, 0, 0.18f, 0.22f, 0.8f, 0.02f); break;
     }
     return para_som(&b);
 }
@@ -180,7 +169,6 @@ void audio_atualizar(const Configuracoes *configuracoes, float delta) {
     volume_efeitos = geral * configuracoes->volume_efeitos / 100.0f;
     SetSoundVolume(musica_base, musica * (1.0f - 0.35f * tensao_atual));
     SetSoundVolume(musica_tensao, musica * tensao_atual);
-    /* As duas camadas tocam sempre juntas (mesma duração), então continuam alinhadas. */
     if (!IsSoundPlaying(musica_base)) {
         PlaySound(musica_base);
         PlaySound(musica_tensao);

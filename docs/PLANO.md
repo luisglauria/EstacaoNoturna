@@ -50,7 +50,7 @@ e é nesse avanço que chegam mensagens novas e correm os prazos de holofote e i
   Funções: `inicializarProgramacao`, `inserirTransmissao`, `buscarTransmissao`, `removerTransmissao`,
   `moverTransmissao`, `exibirProgramacao`, `ordenarPorPrazo` (Insertion Sort estável, move nós),
   `executarProximaTransmissao`, `liberarProgramacao`.
-- **Fila FIFO encadeada** (`fila_mensagens.c`): mensagens chegando ao receptor, na ordem de chegada.
+- **Fila FIFO encadeada** (também em `programacao.c`): mensagens chegando ao receptor, na ordem de chegada.
 
 Ao executar a próxima transmissão:
 1. Se o prazo passou → falha ("chegou tarde").

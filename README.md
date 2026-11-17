@@ -55,7 +55,7 @@ Dentro do jogo não aparecem termos de programação: a lista é o "roteiro da n
 - **Pixel art**: a cabine é desenhada numa tela de 427×240 e ampliada 3× com pixels nítidos, vista de
   cima em 3/4. A luz é um mapa de iluminação com degradês pontilhados multiplicado sobre a cena
   (abajur, telas dos equipamentos, luar, relâmpagos, holofote). Os sprites (operador em 4 direções com
-  passos, fotografia, rádio doméstico) são mapas de letras em `sprites.c`, convertidos em textura na
+  passos, fotografia, rádio doméstico) são mapas de letras em `graficos.c`, convertidos em textura na
   inicialização.
 - **Música e efeitos** são sintetizados em `audio.c`: uma camada de suspense (zumbido grave, acorde
   menor, chiado de rádio, Morse distante) e uma camada de tensão (coração, cordas em trêmulo) que
@@ -72,7 +72,7 @@ denúncia incompleta ou captura. O plano completo e as decisões de projeto est�
   `inserirTransmissao`, `buscarTransmissao`, `removerTransmissao`, `moverTransmissao`,
   `exibirProgramacao` (a interface desenha a lista por ela), `ordenarPorPrazo` (Insertion Sort
   estável que religa os nós), `executarProximaTransmissao` e `liberarProgramacao`.
-- **Fila FIFO encadeada** (`fila_mensagens.c`): mensagens chegando ao receptor, na ordem de chegada.
+- **Fila FIFO encadeada** (também em `programacao.c`): mensagens chegando ao receptor, na ordem de chegada.
 
 A ordem tem efeito real: uma transmissão falha se o prazo passou, se o código de que ela depende não
 foi ao ar antes, ou se a mensagem era falsa. "Priorizar" ordena só pelo prazo, então depois é preciso
@@ -82,12 +82,13 @@ ajustar a ordem à mão para respeitar as dependências.
 
 | Responsabilidade | Arquivos |
 |---|---|
-| Estruturas de dados | `programacao.c/h`, `fila_mensagens.c/h` |
-| Dados narrativos (textos das 4 noites) | `campanha.c/h` |
-| Regras, eventos e emergências (sem raylib) | `partida.c/h`, `partida_acoes.c`, `partida_interno.h` |
-| Telas e fluxo | `main.c`, `app.c/h`, `telas.c`, `fundo.c`, `tutorial.c`, `resumo.c` |
-| Noite na tela | `game.c/h`, `hud.c/h`, `paineis.h`, `painel_*.c` |
-| Cabine, personagem e colisão | `cabin.c/h`, `cabin_props.c`, `cabin_internal.h`, `player.c/h` |
-| Pixel art e luz, sprites | `pixel.c/h`, `sprites.c/h` |
-| Base gráfica, componentes, áudio e configurações | `render.c/h`, `widgets.c/h`, `audio.c/h`, `configuracoes.c/h` |
-| Testes | `tests/test_programacao.c`, `tests/test_fila.c`, `tests/test_partida.c` |
+| Estruturas de dados (lista e fila) | `programacao.c/h` |
+| Regras, eventos e emergências (sem raylib) | `partida.c/h` |
+| Dados narrativos (textos das 4 noites) | `campanha.c` |
+| Declarações da parte gráfica | `interface.h` |
+| Menu, telas, configurações e `main` | `main.c` |
+| Noite na tela: HUD, painéis dos objetos | `noite.c` |
+| Cabine, móveis, colisão e personagem | `cabine.c` |
+| Tela virtual, texto, pixel art, sprites e componentes | `graficos.c` |
+| Música e efeitos sonoros | `audio.c` |
+| Testes | `tests/testes.c` |

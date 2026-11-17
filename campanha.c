@@ -1,15 +1,12 @@
-/* Textos e dados das quatro noites. Para ajustar o enredo, mexa só neste arquivo.
-   Ids de documento começam em 1 (0 = "nenhum"). Prazos contam ações da noite (cada ação = 15 min,
-   a noite começa às 23:00: prazo 5 = até 00:15). */
-#include "campanha.h"
+#include "partida.h"
 #include <stddef.h>
 
 #define CONTAR(vetor) ((int)(sizeof(vetor) / sizeof((vetor)[0])))
 
-/* Ids dos documentos, usados nas contradições e nas tarefas. */
+/* Textos e dados das quatro noites. Para mudar o enredo, mexa só aqui.
+   Prazos contam ações da noite: cada ação = 15 min a partir das 23:00 (prazo 5 = até 00:15). */
 enum { DOC_CADERNO = 1, DOC_MAPA, DOC_CHAMADAS, DOC_ESCALA, DOC_RELATO_PADARIA, DOC_GRAVACAO, DOC_ORDEM };
 
-/* Áreas do holofote em coordenadas da tela virtual (alinhadas à grade de pixels da cabine). */
 static const DefinicaoNoite NOITES[TOTAL_NOITES] = {
     {"Primeiro Sinal",
      "O antigo operador desapareceu há uma semana. A rádio agora é sua. Esta noite é tranquila: conheça a "
@@ -30,7 +27,6 @@ static const DefinicaoNoite NOITES[TOTAL_NOITES] = {
 };
 
 static const Mensagem MENSAGENS[] = {
-    /* ---------- Noite 1: Primeiro Sinal ---------- */
     {.id = 1, .noite = 1, .chegada = -1, .remetente = "Antigo operador",
      .texto = "Bilhete preso no microfone: 'Abra toda noite com a senha ORION. É assim que os nossos sabem que a voz é amiga.'",
      .veracidade = VERACIDADE_VERDADEIRA,
@@ -73,7 +69,6 @@ static const Mensagem MENSAGENS[] = {
      .transmissao = {.id = 5, .codigo = "VEGA", .titulo = "Senha: VEGA", .custo = 1, .prazo = 6},
      .resultado = "VEGA era justamente a senha que a polícia conhecia. Seu sinal ficou marcado."},
 
-    /* ---------- Noite 2: Luz na Janela ---------- */
     {.id = 6, .noite = 2, .chegada = 0, .remetente = "Central",
      .texto = "COMUNICADO DA CENTRAL: a partir desta noite a senha é VEGA. Repasse a todos os contatos.",
      .veracidade = VERACIDADE_FALSA,
@@ -122,7 +117,6 @@ static const Mensagem MENSAGENS[] = {
      .respostas = {{"Compartilhar o roteiro", 0, MARCA_FAROL_COM_PROGRAMACAO, "Você manda o roteiro da noite para o Farol."},
                    {"Guardar para si", 0, 0, "Você não manda nada ao Farol."}}},
 
-    /* ---------- Noite 3: Alguém Está Ouvindo ---------- */
     {.id = 12, .noite = 3, .chegada = 0, .remetente = "Garça",
      .texto = "Tem alguém entregando nosso roteiro à polícia. Nova senha: LUME. Só eu, o Lince e você sabemos. Abra com ela.",
      .veracidade = VERACIDADE_VERDADEIRA,
@@ -173,7 +167,6 @@ static const Mensagem MENSAGENS[] = {
      .transmissao = {.id = 16, .codigo = "PRACA", .titulo = "Aviso: reunião na praça", .custo = 1, .prazo = 5, .urgente = true},
      .resultado = "A praça estava cercada. Vários contatos foram levados, e a culpa pesa."},
 
-    /* ---------- Noite 4: Última Transmissão ---------- */
     {.id = 17, .noite = 4, .chegada = 0, .remetente = "Garça",
      .texto = "É a última noite. Abra com LUME, como ontem, ou ninguém vai acreditar no que vem depois.",
      .veracidade = VERACIDADE_VERDADEIRA,
@@ -254,7 +247,6 @@ static const Novidade NOVIDADES[] = {
     {4, 0, 0, "RECADO DA GARÇA", "É hoje. Junte as provas e ponha a denúncia no ar antes que batam à sua porta."},
 };
 
-/* Etapas que se repetem em toda noite (ler, preparar, ligar). */
 #define TAREFAS_DE_ABERTURA(noite, dica_receptor)                                                                       \
     {noite, true, META_LER_NOVIDADES, NULL, 0, 0, 0, "Ler as novidades no receptor", dica_receptor,                     \
      "Você começou a noite sem saber o que acontecia lá fora.", 0},                                                    \
